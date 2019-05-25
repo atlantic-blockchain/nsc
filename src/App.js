@@ -22,7 +22,7 @@ class App extends Component {
       collapsed: false,
       web3: null,
       contract: null,
-      maxSupply: 0
+      currentSupply: 0
     };
   }
 
@@ -56,12 +56,16 @@ class App extends Component {
 
   init = () => {
     const { contract } = this.state;
+    contract.currentSupply((err, res) => {
+      this.setState({
+        currentSupply: res.toNumber()
+      });
+    });
+
     console.log(contract);
-    contract.currentSupply((one, two, three) => {
-      console.log(one);
-      console.log(two);
-      console.log(three);
-      console.log();
+
+    contract.citizens(0, (err, res) => {
+
     });
   }
 
@@ -100,7 +104,7 @@ class App extends Component {
                 type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}
                 onClick={this.toggle}
               />
-              Max Supply: {this.state.maxSupply}
+              Max Supply: {this.state.currentSupply}
             </Header>
             <Content
               style={{

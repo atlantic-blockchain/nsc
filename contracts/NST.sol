@@ -3,8 +3,8 @@ contract NST {
 
     mapping (address => uint256) public balances;
 
-    address[] private citizens;
-    uint256 public currentSupply = 10;
+    address[] public citizens;
+    uint256 public currentSupply;
     address owner;
 
     Issue[] public issues;
