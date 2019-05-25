@@ -10,7 +10,7 @@ import './App.scss';
 
 import getWeb3 from './utils/getWeb3';
 
-import SimpleStorage from './contracts/SimpleStorage.json';
+import NST from './contracts/NST.json';
 
 const { Sider, Header, Content } = Layout;
 
@@ -20,7 +20,9 @@ class App extends Component {
     super(props);
     this.state = {
       collapsed: false,
-      web3: null
+      web3: null,
+      contract: null,
+      maxSupply: 0
     };
   }
 
@@ -29,31 +31,38 @@ class App extends Component {
       // Get network provider and web3 instance.
       const web3 = await getWeb3();
 
-      // Use web3 to get the user's accounts.
-      const accounts = await web3.eth.getAccounts();
-      web3.eth.defaultAccount = accounts[0];
+      // // Get the contract instance.
+      const deployedNetwork = NST.networks["5777"];
 
-      // Get the contract instance.
-      const networkId = await web3.eth.net.getId();
-      const deployedNetwork = SimpleStorage.networks[networkId];
-
-      const instance = new web3.eth.Contract(
-        SimpleStorage.abi,
-        deployedNetwork && deployedNetwork.address
+      const instance = web3.eth.contract(
+        NST.abi
       );
-      // Set web3, accounts, and contract to the state, and then proceed with an
-      // example of interacting with the contract's methods.
+
+      const contract = instance.at(deployedNetwork.address);
+      // // Set web3, accounts, and contract to the state, and then proceed with an
+      // // example of interacting with the contract's methods.
       this.setState({ 
-        web3, 
-        accounts,
-        contract: instance 
+        web3,
+        contract
       }, this.init);
     } catch (error) {
       // Catch any errors for any of the above operations.
+      console.log(error)
       alert(
         `Failed to load web3, accounts, or contract. Check console for details.`,
       );
     }
+  }
+
+  init = () => {
+    const { contract } = this.state;
+    console.log(contract);
+    contract.currentSupply((one, two, three) => {
+      console.log(one);
+      console.log(two);
+      console.log(three);
+      console.log();
+    });
   }
 
 
@@ -91,6 +100,7 @@ class App extends Component {
                 type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}
                 onClick={this.toggle}
               />
+              Max Supply: {this.state.maxSupply}
             </Header>
             <Content
               style={{
