@@ -1,27 +1,28 @@
 import React, { Component } from 'react';
-import { Button, Table, Row, Col } from 'antd';
+import { Button, Row, Col } from 'antd';
 
 
 class Account extends Component {
+  constructor(props) {
+    super(props);
+
+    this.give = this.give.bind(this);
+  }
+
+  give() {
+    const { contract, account, accountBalance, address } = this.props;
+    contract && contract.transfer(address, accountBalance, { from: account }, (err, res) => {
+
+    });
+  }
+
   render() {
     return (
-      <div>
-        <h1 className='AccountId'>id_testData</h1>
-        <Row className="head hd1">
-          <Col className="tknID" span={8}>TokenID</Col>
-          <Col className="addr" span={16}>Address</Col>
-        </Row>
-
-        <Row classNAme="hd1_data">
-          <Col className="tknID" span={8}>id_testData</Col>
-          <Col className="addr" span={16}>Addr_testData</Col>
-        </Row>
-
-        <Row className="head hd2">
-          <Col className="bal" span={8}></Col>
-          <Col className="hd2_data" span={16}>bal_testData</Col>
-        </Row>
-      </div>
+      <Row className="head hd1">
+        <Col className='index' span={4}>{this.props.id}</Col>
+        <Col className="addr" span={16}>{this.props.address}</Col>
+        <Col span={4}><Button onClick={this.give} type='primary'>Give</Button> </Col>
+      </Row>
     );
   }
 }

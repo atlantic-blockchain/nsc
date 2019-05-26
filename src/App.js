@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Route, withRouter, Link } from 'react-router-d
 import Main from './components/Main';
 import Admin from './components/Admin';
 import Issues from './components/Issues';
+import Distro from './components/Distro';
 
 import './App.scss';
 
@@ -22,7 +23,9 @@ class App extends Component {
       collapsed: false,
       web3: null,
       contract: null,
-      currentSupply: 0
+      currentSupply: 0,
+      account: null,
+      accountBalance: 0
     };
   }
 
@@ -39,6 +42,8 @@ class App extends Component {
       );
 
       const contract = instance.at(deployedNetwork.address);
+
+      web3.eth.defaultAccount = '0x6de7f5aab77e06eda6e532b00e3837291425d10e';
       // // Set web3, accounts, and contract to the state, and then proceed with an
       // // example of interacting with the contract's methods.
       this.setState({ 
@@ -55,17 +60,21 @@ class App extends Component {
   }
 
   init = () => {
-    const { contract } = this.state;
+    const { contract, web3 } = this.state;
+
+    const account = web3.eth.accounts[0];
+
     contract.currentSupply((err, res) => {
       this.setState({
         currentSupply: res.toNumber()
       });
     });
 
-    console.log(contract);
-
-    contract.citizens(0, (err, res) => {
-
+    contract.balances(account, (err, res) => {
+      this.setState({
+        account, 
+        accountBalance: res.toNumber()
+      });
     });
   }
 
@@ -77,6 +86,10 @@ class App extends Component {
   }
 
   render() {
+
+    const { account, web3 } = this.state;
+    let showAdmin = web3 && web3.eth.defaultAccount === account;
+
     return (
       <Router>
         <Layout>
@@ -87,13 +100,19 @@ class App extends Component {
                 <Icon type='user' />
                 <span><Link to='/'>Main</Link></span>
               </Menu.Item>
-              <Menu.Item className='menuLink' key='2'>
+              {
+              showAdmin && <Menu.Item className='menuLink' key='2'>
                 <Icon type='video-camera' />
                 <span><Link to='/admin'>Admin</Link></span>
               </Menu.Item>
+              }
               <Menu.Item className='menuLink' key='3'>
                 <Icon type='upload' />
                 <span><Link to='/issues'>Issues</Link></span>
+              </Menu.Item>
+              <Menu.Item className='menuLink' key='4'>
+                <Icon type='download' />
+                <span><Link to='/distro'>Distribution</Link></span>
               </Menu.Item>
             </Menu>
           </Sider>
@@ -104,7 +123,8 @@ class App extends Component {
                 type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}
                 onClick={this.toggle}
               />
-              Max Supply: {this.state.currentSupply}
+                <span style={{}}>Account Balance: {this.state.accountBalance}</span>
+                <span style={{ float:'right' }}>Connected Account: {this.state.account}</span>
             </Header>
             <Content
               style={{
@@ -115,8 +135,9 @@ class App extends Component {
               }}
             >
               <Route exact path='/' component={() => <Main {...this.state} />}/>
-              <Route path='/issues' component={Issues}/>
-              <Route path='/admin' component={Admin}/>
+              <Route path='/issues' component={() => <Issues {...this.state} />}/>
+              <Route path='/admin' component={() => <Admin {...this.state} />}/>
+              <Route path='/distro' component={() => <Distro {...this.state} />} />
             </Content>
           </Layout>
         </Layout>

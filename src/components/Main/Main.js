@@ -1,55 +1,78 @@
 import React, { Component } from 'react';
 import Account from './Account';
-import { Button } from 'antd';
-import { Pagination } from 'antd';
+import { Button, Row, Col, Input } from 'antd';
 
-
-function onShowSizeChange(current, pageSize) {
-  console.log(current, pageSize);
-}
 
 class Main extends Component {
   constructor(props) {
     super(props);
+
     this.state = {
-      test: 'This is a test',
-      number: 1000
+      citizenAddress: '',
+      citizens: []
     };
+
+    this.register = this.register.bind(this);
+    this.changeCitizenAddress = this.changeCitizenAddress.bind(this);
+    this.pushCitizen = this.pushCitizen.bind(this);
+  }
+
+  componentWillMount = () => {
+    const { contract } = this.props;
+    contract && contract.citizenCount((err, res) => {
+      const count = res.toNumber();
+      for (let i = 0; i < count; i++) {
+        this.props.contract.citizens(i, (err, res) => {
+          this.pushCitizen(res);
+        });
+      }
+    })
+  }
+
+  pushCitizen(citizen) {
+    let citizens = this.state.citizens.slice();
+    citizens.push(citizen);
+    this.setState({
+      citizens
+    });
+  }
+
+  changeCitizenAddress(e) {
+    this.setState({
+      citizenAddress: e.target.value
+    });
+  }
+
+  register() {
+    const { web3, contract, account } = this.props;
+    const { citizenAddress } = this.state;
+
+    contract.register(citizenAddress, {from: account}, (err, res) => {});
   }
 
   render() {
     return (
-      <div>
-        <div className="acc">
-          <Account></Account>
-          <Account></Account>
-          <Account></Account>
-        </div>
-        <div>
-          <div className="pg">
-            <Pagination
-              showSizeChanger
-              onShowSizeChange={onShowSizeChange}
-              defaultCurrent={3}
-              total={500}
-            />
-            <br />
+      <Row>
 
-          </div>
-        </div>
-      </div>
+        <Col span={24}>
+          <Row>
+            { this.state.citizens.map((citizen, index) => {
+              return (
+                <Col span={24} key={index}>
+                  <Account id={index} address={citizen} { ...this.props } />
+                </Col>
+              )
+            })}
+          </Row>
+        </Col>
+
+        <Col span={24}>
+          <Input value={this.state.citizenAddress} onChange={this.changeCitizenAddress} type='text' placeholder='Citizen Address' />
+          <Button onClick={this.register} type='primary'>Submit</Button>
+        </Col>
+      </Row>
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
 
 export default Main;

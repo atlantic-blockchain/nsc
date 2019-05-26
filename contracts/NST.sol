@@ -4,10 +4,13 @@ contract NST {
     mapping (address => uint256) public balances;
 
     address[] public citizens;
+    uint256 public citizenCount;
+
     uint256 public currentSupply;
     address owner;
 
     Issue[] public issues;
+    uint256 public issueCount;
 
     struct Issue {
       string name;
@@ -18,7 +21,8 @@ contract NST {
 
     constructor() public {
       owner = msg.sender;
-      currentSupply = 1000000;
+      currentSupply = 10;
+      issueCount = 0;
     }
 
     function transfer(address receiver, uint256 amount) public
@@ -32,6 +36,7 @@ contract NST {
     function register(address citizen) public {
       balances[citizen] = 0;
       citizens.push(citizen);
+      citizenCount += 1;
     }
 
     function distribute()
@@ -61,6 +66,7 @@ contract NST {
 
     function newIssue(string memory issueName, string memory description, address owner) public {
       issues.push(Issue(issueName, description, 0, owner));
+      issueCount += 1;
       emit NewIssue();
     }
 
@@ -70,8 +76,7 @@ contract NST {
       balances[msg.sender] -= amount;
       issues[id].balance += amount;
     }
-
-    event Initialization (address owner, uint256 currentSupply);
+    
     event Transfer (address sender, address receiver);
     event Distribution(address citizen, uint256 balance, uint256 currentSupply);
     event Reset (uint currentSupply);
